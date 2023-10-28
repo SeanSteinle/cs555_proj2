@@ -1,5 +1,4 @@
 import threading
-from collections import defaultdict
 
 def network_init(filename: str):
     neighbors_dict = read_nodes(filename)
@@ -8,7 +7,7 @@ def network_init(filename: str):
 
 def read_nodes(filename: str):
     #read directly from file
-    with open(filename, "r") as f:
+    with open(filename, "r")  as f:
         text = f.readlines()
     DV = [line.strip('\n').split(' ') for line in text]
     assert len(DV) == len(DV[0]) #should be NxN!
@@ -30,4 +29,5 @@ def read_nodes(filename: str):
 
 def spinup_threads(neighbors_dict: dict): #network_map is NxN array
     #target function for thread should be a Router() constructor
+    #threads = threading.Thread(target=Router, args=(dst,weight?))
     pass

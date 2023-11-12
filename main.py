@@ -11,5 +11,7 @@
     # each node has a NxN matrix where 
 
 from network_topology import network_init
+from router import Router
 
+print(f"initializing network graph...")
 network_init("network.txt")

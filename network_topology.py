@@ -1,4 +1,5 @@
 import threading
+from router import Router
 
 def network_init(filename: str):
     neighbors_dict = read_nodes(filename)
@@ -30,4 +31,10 @@ def read_nodes(filename: str):
 def spinup_threads(neighbors_dict: dict): #network_map is NxN array
     #target function for thread should be a Router() constructor
     #threads = threading.Thread(target=Router, args=(dst,weight?))
-    pass
+
+    routers = []
+    for router_id in neighbors_dict.keys():
+        routers.append(Router(5, router_id, neighbors_dict[router_id]))
+
+    for router in routers:
+        print(f"Router ID: {router.id}\nDVM: {router.DVM}\n")

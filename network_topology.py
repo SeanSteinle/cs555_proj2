@@ -35,9 +35,5 @@ def spinup_threads(neighbors_dict: dict): #network_map is NxN array
     for router_id in neighbors_dict.keys():
         thread = threading.Thread(target=Router, args=(len(neighbors_dict.keys()), router_id, neighbors_dict[router_id]))
         threads.append(thread)
-        thread.start()
-
-    for thread in threads:
-        thread.join()
 
     return threads

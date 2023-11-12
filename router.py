@@ -8,6 +8,7 @@ class Router:
         for neighbor,weight in neighbors:
             DVM[router_id][neighbor] = weight
         self.DVM = DVM #this router's distance-vector matrix
+        print(f"DVM created! {self.DVM}")
 
     def receive(self):
         pass

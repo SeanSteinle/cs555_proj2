@@ -29,12 +29,15 @@ def read_nodes(filename: str):
     return neighbor_dict
 
 def spinup_threads(neighbors_dict: dict): #network_map is NxN array
-    #target function for thread should be a Router() constructor
-    #threads = threading.Thread(target=Router, args=(dst,weight?))
+    #using this to learn about threads: https://realpython.com/intro-to-python-threading/
 
-    routers = []
+    threads = []
     for router_id in neighbors_dict.keys():
-        routers.append(Router(5, router_id, neighbors_dict[router_id]))
+        thread = threading.Thread(target=Router, args=(len(neighbors_dict.keys()), router_id, neighbors_dict[router_id]))
+        threads.append(thread)
+        thread.start()
 
-    for router in routers:
-        print(f"Router ID: {router.id}\nDVM: {router.DVM}\n")
+    for thread in threads:
+        thread.join()
+
+    return threads

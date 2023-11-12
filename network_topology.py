@@ -3,8 +3,8 @@ from router import Router
 
 def network_init(filename: str):
     neighbors_dict = read_nodes(filename)
-    print(neighbors_dict)
     threads = spinup_threads(neighbors_dict)
+    return threads
 
 def read_nodes(filename: str):
     #read directly from file

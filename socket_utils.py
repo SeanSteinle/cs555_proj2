@@ -1,6 +1,6 @@
 import socket
 
-def start_main_socket(router_id: int):
+def create_socket(router_id: int):
     host, port = socket.gethostname(), 50000+router_id
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((host,port))

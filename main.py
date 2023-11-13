@@ -11,7 +11,9 @@
     # each node has a NxN matrix where 
 
 from network_topology import network_init
-from socket_utils import start_main_socket, signal_router
+from socket_utils import create_socket, signal_router
+import router
+import threading
 
 #parse network map, create thread objects of Routers
 print(f"initializing network graph...")
@@ -22,7 +24,7 @@ for thread in threads:
     thread.start()
 
 #start main client sockets -- note that we keep sockets in a list instead of a dict. this is because our ids are just indices in this list.
-main_clients = [start_main_socket(router_id) for router_id in range(len(threads))]
+main_clients = [create_socket(router_id) for router_id in range(len(threads))]
 
 #main iteration loop
 n_iterations = 5

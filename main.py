@@ -32,7 +32,7 @@ for iter_n in range(n_iterations):
     response = signal_router(main_clients[curr_router_id], "share_table")
     print(f"got response {response}")
 
-#TESTING UPDATE TABLE:
+#TESTING UPDATE TABLE -- NOT FINISHED!:
 print(f"testing update...")
 response = signal_router(main_clients[0], "update_table: DATA HERE")
 print(f"got response {response}")

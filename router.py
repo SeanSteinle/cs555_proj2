@@ -54,7 +54,7 @@ class Router:
                 if neighbor_router == self.id: continue #don't need to send ourselves updates
                 DV_to_share = self.DVM[neighbor_router]
                 #prepare DV_to_share as string
-                #create socket to neighbor
+                #create socket to neighbor (can I reuse my functions from socket_utils?)
                 #send DV_to_share through socket
             msg = "(router #"+ str(self.id)+") shared with neighbors successfully."
             conn.sendall(bytes(msg, "utf-8"))

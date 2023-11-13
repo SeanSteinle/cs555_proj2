@@ -11,7 +11,7 @@
     # each node has a NxN matrix where 
 
 from network_topology import network_init
-from socket_utils import signal_router
+from socket_utils import start_main_socket, signal_router
 
 #parse network map, create thread objects of Routers
 print(f"initializing network graph...")
@@ -21,11 +21,22 @@ threads = network_init("network.txt")
 for thread in threads:
     thread.start()
 
+#start main client sockets
+main_clients = [start_main_socket(router_id) for router_id in range(len(threads))]
+
 #main iteration loop
-n_iterations = 5
+n_iterations = 10
 for iter_n in range(n_iterations):
     curr_router_id = iter_n % len(threads) #TD: actually, this should be a lookup!
     print(f"iteration #{iter_n}. signaling router #{curr_router_id}")
-    response = signal_router(curr_router_id)
+    response = signal_router(main_clients[curr_router_id], "share_table")
     print(f"got response {response}")
     #assert response == "success"
+
+print(f"closing main clients...")
+for main_client in main_clients:
+    main_client.close()
+
+print(f"closing threads...")
+for thread in threads:
+    thread.join()

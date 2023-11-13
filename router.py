@@ -40,21 +40,24 @@ class Router:
                     conn.sendall(bytes(msg, "utf-8"))
             except:
                 break
-        #if message is from Main, send()
-        #if message is from another router, update()
 
-    def update(self, conn, data):
-        #print(f"showing data from router #{self.id}: {data}")
-
+    def update(self, conn: socket.socket, payload: str):
         #TODO: the DV algorithm should be implemented here! 
-        msg = "(router #"+ str(self.id)+") updated successfully. data is " + data
+        msg = "(router #"+ str(self.id)+") updated successfully. payload: " + payload
         conn.sendall(bytes(msg, "utf-8"))
 
-    def share(self, conn):
-        msg = "(router #"+ str(self.id)+") shared successfully."
-        conn.sendall(bytes(msg, "utf-8"))
-
-    def close(self, conn, s):
-        msg = "(router #"+ str(self.id)+") connection closed."
-        conn.sendall(bytes(msg, "utf-8"))
-        s.close()
+    def share(self, conn: socket.socket):
+        #TODO: the router should send its DV to relevant neighbor(s) here, if it has updates to share.
+        self.DVM_updated = True #NOTE: this should be set during self.update() above
+        if self.DVM_updated:
+            for neighbor_router in range(len(self.DVM)):
+                if neighbor_router == self.id: continue #don't need to send ourselves updates
+                DV_to_share = self.DVM[neighbor_router]
+                #prepare DV_to_share as string
+                #create socket to neighbor
+                #send DV_to_share through socket
+            msg = "(router #"+ str(self.id)+") shared with neighbors successfully."
+            conn.sendall(bytes(msg, "utf-8"))
+        else:
+            msg = "(router #"+ str(self.id)+") didn't have updates."
+            conn.sendall(bytes(msg, "utf-8"))

@@ -3,10 +3,6 @@ import time, socket
 class Router:
     def __init__(self, N: int, router_id: int, neighbors: list):
         self.id = 50000+router_id
-        #create socket and register socket id with global list (wait on this)
-
-        self.count = 0
-
 
         #initialize the distance-vector matrix for this router. add immediate neighbors
         DVM = [[999]*N for i in range(N)]
@@ -19,37 +15,43 @@ class Router:
         self.receive()
 
     def receive(self):
+        #set up socket that router will use for duration of experiment
         host, port = '', self.id
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) #allows for address/port reuse
         s.bind((host,port))
-        s.listen(1) #what does 1 do here?
+        s.listen(1)
         conn, addr = s.accept()
+
+        #now listen for commands from main or other routers
         while True:
             try:
-                command = conn.recv(1024)
-                if not command:
+                msg = conn.recv(1024)
+                msg = str(msg).strip()[2:-1]
+                msg = msg.split(": ")
+                if not msg:
                     break
-                elif command == bytes("share_table", "utf-8"):
+                elif msg[0] == "share_table":
                     self.share(conn)
-                elif command == bytes("update_table", "utf-8"):
-                    self.update(conn)
-                elif command == bytes("close_socket", "utf-8"):
-                    print("closing socket from router!")
-                    self.close(conn, s)
-                    break
-            except socket.error:
+                elif msg[0] == "update_table":
+                    self.update(conn, msg[1])
+                else:
+                    msg = "(router #"+ str(self.id)+") could not interpret your message of: " + msg
+                    conn.sendall(bytes(msg, "utf-8"))
+            except:
                 break
         #if message is from Main, send()
         #if message is from another router, update()
 
-    def update(self, conn):
-        msg = "(router #"+ str(self.id)+") updated successfully"
+    def update(self, conn, data):
+        #print(f"showing data from router #{self.id}: {data}")
+
+        #TODO: the DV algorithm should be implemented here! 
+        msg = "(router #"+ str(self.id)+") updated successfully. data is " + data
         conn.sendall(bytes(msg, "utf-8"))
 
     def share(self, conn):
-        self.count += 1
-        msg = "(router #"+ str(self.id)+") shared successfully. count + " + str(self.count)
+        msg = "(router #"+ str(self.id)+") shared successfully."
         conn.sendall(bytes(msg, "utf-8"))
 
     def close(self, conn, s):

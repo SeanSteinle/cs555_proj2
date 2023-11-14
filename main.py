@@ -1,12 +1,15 @@
 from router import Router
 from network_topology import network_init
-import socket, time
+import socket, time, sys
+
+assert len(sys.argv) == 2
+network_path = sys.argv[1]
 
 timeout = 1
 
 #reading nodes
 print(f"loading data...")
-threads = network_init('network.txt')
+threads = network_init(network_path)
 print(f"data loaded!")
 
 #starting threads
@@ -25,7 +28,7 @@ for router_n in range(len(threads)):
     client.close()
 
 time.sleep(0.1) #let threads close peacefully
-print(f"Number of rounds till convergence {Router.round_n}")
+print(f"Number of rounds till convergence: {Router.round_n}")
 
 #end threads -- will likely need to issue close condition
 for thread in threads:

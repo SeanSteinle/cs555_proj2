@@ -19,7 +19,16 @@ class Router:
     round_n = 1 #note -- should be incremented and tracked as a global!!
 
     def __init__(self, id: int, neighbors: list):
+        self.id2name = {
+            0:"A",
+            1:"B",
+            2:"C",
+            3:"D",
+            4:"E"
+        }
+
         self.id = id
+        self.name = self.id2name[id]
         self.create_DVM(neighbors)
 
         threading.Thread(target=Router.host_server, args=[self]).start()
@@ -33,14 +42,14 @@ class Router:
             self.old_DVM = self.current_DVM
 
             if self.updated:
-                print(f"Round {Router.round_n}: {self.id}")
+                print(f"Round {Router.round_n}: {self.name}")
                 Router.round_n += 1
                 
                 Router.convergence_streak = 0
                 self.updated = False
                 for client_id in self.clients.keys():
                     client = self.clients[client_id]
-                    print(f"Sending DV to node {client_id}")
+                    print(f"Sending DV to node {self.id2name[client_id]}")
                     msg = bytes("update," + str(self.id) + "," + " ".join(list(map(str, self.current_DVM[self.id]))), encoding='utf-8') #convert id and each elem of dvm into str, cast to bytes with utf-8!
                     client.sendall(msg)
                     data = client.recv(1024)
@@ -135,13 +144,13 @@ class Router:
                         self.old_DVM = deepcopy(self.current_DVM)
 
                         my_dv = self.current_DVM[self.id]
-                        print(f"Node {self.id} received DV from {neighbor_id}")
-                        print(f"Updating DV matrix at node {self.id}")
+                        print(f"Node {self.name} received DV from {self.id2name[neighbor_id]}")
+                        print(f"Updating DV matrix at node {self.name}")
                         for router_id in range(len(my_dv)):
                             if router_id == self.id: continue
                             my_dv[router_id] = min(my_dv[router_id], my_dv[neighbor_id] + neighbor_dv[router_id])
                         self.current_DVM[self.id] = my_dv
-                        print(f"New DV matrix at node {self.id}: {self.current_DVM[self.id]}\n")
+                        print(f"New DV matrix at node {self.name}: {self.current_DVM[self.id]}\n")
 
                         #check whether DVM changed, update 'updated' flag
                         if self.changes_detected(self.old_DVM, self.current_DVM): #TODO: think this is broke!
@@ -152,7 +161,7 @@ class Router:
                     elif cmd == 'has_updates?':
                         s.sendall(bytes(str(self.updated), encoding='utf-8'))
                     elif cmd == 'end':
-                        print(f"Node #{self.id} DV = {self.current_DVM[self.id]}")
+                        print(f"Node {self.name} DV = {self.current_DVM[self.id]}")
                         return
                     else:
                         s.close()

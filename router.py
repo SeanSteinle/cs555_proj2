@@ -6,8 +6,13 @@ class Router:
 
         #initialize the distance-vector matrix for this router. add immediate neighbors
         DVM = [[999]*N for i in range(N)]
+        
+        for i in range(N):
+            DVM[i][i] = 0
+
         for neighbor,weight in neighbors:
             DVM[router_id][neighbor] = weight
+            DVM[neighbor][router_id] = weight
         self.DVM = DVM #this router's distance-vector matrix
         print(f"DVM created! {self.DVM}")
 
@@ -42,6 +47,25 @@ class Router:
                 break
 
     def update(self, conn: socket.socket, payload: str):
+        payload = [2, 999, 5, 10, 999]
+        sender_id = 1
+
+        for router_id in range(len(self.DVM)):
+            for i in range(len(self.DVM[router_id])):
+                known_cost = self.DVM[router_id][i]
+                new_cost = self.DVM[router_id][sender_id] + payload[i]
+
+                if known_cost <= new_cost:
+                    min = known_cost
+                else:
+                    #new best path found
+                    min = new_cost
+                    self.DVM_updated = True
+                    
+                self.DVM[router_id][i] = min
+        
+        print(f"updated table {self.DVM}")
+
         #TODO: the DV algorithm should be implemented here! 
         msg = "(router #"+ str(self.id)+") updated successfully. payload: " + payload
         conn.sendall(bytes(msg, "utf-8"))

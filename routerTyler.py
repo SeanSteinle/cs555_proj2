@@ -31,7 +31,7 @@ class Router:
 
         #example of how to use the two functions to enforce order between threads
         self.enforce_order()
-        print(f"Router {self.id} created! DVM: {self.DVM}")
+        print(f"Router {self.id} created! DVM: {self.current_DVM}")
         self.relax_order()
 
         threading.Thread(target=Router.host_server, args=[self]).start()
@@ -39,14 +39,20 @@ class Router:
         Router.all_listening.wait()
         self.populate_clients(neighbors)
 
-        while True:
-            self.enforce_order()
-            for client_id in self.clients.keys():
-                client = self.clients[client_id]
-                client.sendall(f"Hello #{client_id} from router {self.id}!!!".encode())
-                data = client.recv(1024)
-                # print(f"Received from server: {data.decode()}")
-            self.relax_order()
+        # while True:
+        self.enforce_order()
+        print(f"Current DV matrix: {self.current_DVM}")
+        print(f"Last DV matrix: {self.old_DVM}")
+        update_string = "Updated" if self.updated else "Not Updated"
+        print(f"Updated from last DV matrix or the same? {update_string}")
+        self.old_DVM = self.current_DVM
+
+        for client_id in self.clients.keys():
+            client = self.clients[client_id]
+            client.sendall(f"Hello #{client_id} from router {self.id}!!!".encode())
+            data = client.recv(1024)
+            # print(f"Received from server: {data.decode()}")
+        self.relax_order()
 
 
     #anything put between these two functions will ensure that they happen in a round-robin fashion according to self.id
@@ -64,12 +70,14 @@ class Router:
         for i in range(N):
             DVM[i][i] = 0
 
+        self.old_DVM = [row[:] for row in DVM]
+
         for neighbor,weight in neighbors:
             self.updated = True #novel information found, should be shared next iteration
             DVM[self.id][neighbor] = weight
             DVM[neighbor][self.id] = weight
 
-        self.DVM = DVM
+        self.current_DVM = DVM
 
     #creates permanent socket connections to other connected routers    
     def populate_clients(self, neighbors):

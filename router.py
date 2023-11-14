@@ -16,17 +16,17 @@ class Router:
         self.receive()
 
     def receive(self):
-        #set up socket that router will use for duration of experiment
-        host, port = '', self.id
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) #allows for address/port reuse
-        s.bind((host,port))
-        s.listen(1)
-        conn, addr = s.accept()
-
         #now listen for commands from main or other routers
         while True:
             try:
+                #set up socket that router will use for duration of experiment
+                host, port = '', self.id
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) #allows for address/port reuse
+                s.bind((host,port))
+                s.listen(1)
+                conn, addr = s.accept()
+
                 msg = conn.recv(1024)
                 msg = str(msg).strip()[2:-1]
                 msg = msg.split(": ")

@@ -17,6 +17,8 @@ for thread in threads:
 import time
 time.sleep(2)
 
+#TODO: may need more control flow starting from main that kicks off sharing
+
 #can now check for end of propogation via "has_updates?" command!
 converged = False
 while not converged:

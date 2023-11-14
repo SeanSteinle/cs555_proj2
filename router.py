@@ -12,11 +12,6 @@ class Router:
 
     next_scheduler: [threading.Event] = [] #when the number of routers are known, will store n events to wake up the next router
 
-    # def start_router(id: int, ):
-    #     Router.num_routers += 1
-    #     t = threading.Thread(target=Router, args=[id])
-    #     t.start()
-
     def __init__(self, id: int, neighbors: list):
         self.id = id
         self.create_DVM(neighbors)
@@ -26,12 +21,7 @@ class Router:
         Router.all_listening.wait()
         self.populate_clients(neighbors)
 
-        # while True: #TODO: print better and end when converged
         self.enforce_order()
-        #print(f"Current DV matrix: {self.current_DVM}")
-        #print(f"Last DV matrix: {self.old_DVM}")
-        update_string = "Updated" if self.updated else "Not Updated" #all routers are initially set to 'updated'
-        #print(f"Updated from last DV matrix or the same? {update_string}")
         self.old_DVM = self.current_DVM
 
         round_n = 1 #note -- should be incremented and tracked as a global!!
@@ -42,13 +32,10 @@ class Router:
                 print(f"Sending DV to node {client_id}")
                 msg = bytes("update," + str(self.id) + "," + " ".join(list(map(str, self.current_DVM[self.id]))), encoding='utf-8') #convert id and each elem of dvm into str, cast to bytes with utf-8!
                 client.sendall(msg)
-                # client.sendall(f"Hello #{client_id} from router {self.id}!!!".encode())
                 data = client.recv(1024)
-            # print(f"Received from server: {data.decode()}")
 
         self.updated = False
         self.relax_order()
-
 
     #anything put between these two functions will ensure that they happen in a round-robin fashion according to self.id
     def enforce_order(self):
@@ -105,7 +92,6 @@ class Router:
             Router.listening_lock.acquire()
             if self.id not in Router.routers_listening:
                 Router.routers_listening.add(self.id)
-                print(f"Routers listening: {Router.routers_listening}")
                 if len(Router.routers_listening) == Router.num_routers: #if all are listening then clients can start connecting to servers
                     Router.all_listening.set()
             Router.listening_lock.release()
@@ -114,7 +100,6 @@ class Router:
                 if s is server:
                     client_socket, address = server.accept()
                     read_list.append(client_socket)
-                    # print("Connection from", address)
                 else:
                     try:
                         data = s.recv(1024)
@@ -131,18 +116,14 @@ class Router:
                     neighbor_dv = [int(elem) for elem in neighbor_dv.split(' ')]
 
                     if cmd == 'update':
-                        #print(f"Router {self.id} received {neighbor_dv} from {neighbor_id}") #TODO: now update neighbor_dvm using neighbor_dv
-                        #TODO: now we need to implement the DV algorithm here
+                        #DV algorithm!
                         old_dvm = self.current_DVM
 
-                        #~rest of algorithm goes here~
                         my_dv = self.current_DVM[self.id]
-                        #print(f"updating in router #{self.id} DVM: {self.current_DVM}\nupdating from neighbor #{neighbor_id} with dv: {neighbor_dv}")
                         print(f"Node {self.id} received DV from {neighbor_id}")
                         print(f"Updating DV matrix at node {self.id}")
                         for router_id in range(len(my_dv)):
                             if router_id == self.id: continue
-                            #my_dv is current router's dv. dv is neighbor's
                             my_dv[router_id] = min(my_dv[router_id], my_dv[neighbor_id] + neighbor_dv[router_id])
                         self.current_DVM[self.id] = my_dv
                         print(f"New DV matrix at node {self.id}: {self.current_DVM[self.id]}\n")
@@ -152,8 +133,8 @@ class Router:
                         if self.changes_detected(old_dvm, new_dvm): #TODO: think this is broke!
                             self.updated = True
 
-                        # print(f"Router #{self.id} received {data.decode()}")
-                        s.send(b"Received!")
+                        s.send(b"Received!") #don't delete
+                    #TODO: write section cmd == 'share' where client shares DV. should use code currently in __init__
                     elif cmd == 'has_updates?':
                         s.sendall(bytes(str(self.updated), encoding='utf-8'))
                     elif cmd == 'end':

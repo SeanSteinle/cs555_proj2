@@ -37,7 +37,8 @@ class Router:
         if self.updated:
             for client_id in self.clients.keys():
                 client = self.clients[client_id]
-                client.sendall(pickle.dumps((self.id, self.current_DVM[self.id])))
+                msg = bytes("update," + str(self.id) + "," + " ".join(list(map(str, self.current_DVM[self.id]))), encoding='utf-8') #convert id and each elem of dvm into str, cast to bytes with utf-8!
+                client.sendall(msg)
                 # client.sendall(f"Hello #{client_id} from router {self.id}!!!".encode())
                 data = client.recv(1024)
             # print(f"Received from server: {data.decode()}")
@@ -105,12 +106,25 @@ class Router:
                     read_list.append(client_socket)
                     # print("Connection from", address)
                 else:
-                    data = s.recv(1024)
-                    if data:
-                        sender_id, dv = pickle.loads(data)
+                    try:
+                        data = s.recv(1024)
+                    except Exception as data_error:
+                        print(f"got data encoding error: {data_error}.\ndata: {data}")
+                        continue 
+                    if not data: #ACKs should be ignored!
+                        continue
+                    
+                    #now process data message
+                    data = data.decode('utf-8')
+                    cmd, sender_id, dv = data.split(',')
+                    dv = [int(elem) for elem in dv.split(' ')]
+
+                    if cmd == 'update':
                         print(f"Router {self.id} received {dv} from {sender_id}") #TODO: now update dvm using dv
                         # print(f"Router #{self.id} received {data.decode()}")
                         s.send(b"Received!")
+                    elif cmd == 'end':
+                        break
                     else:
                         s.close()
                         read_list.remove(s)

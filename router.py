@@ -89,7 +89,7 @@ class Router:
         self.clients = {}
         for router_id, weight in neighbors:
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client.connect(('', 50000+router_id))
+            client.connect((socket.gethostname(), 50000+router_id))
             self.clients[router_id] = client
 
     #maybe maintain 2 versions of DVs, one to be update when new info comes in and another to provide the illusion of synchronized iteration
@@ -97,7 +97,7 @@ class Router:
     def host_server(self):
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        server.bind(('', 50000 + self.id))
+        server.bind((socket.gethostname(), 50000 + self.id))
         server.listen(10)
 
         read_list = [server]

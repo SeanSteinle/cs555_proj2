@@ -30,7 +30,7 @@ class Router:
         self.enforce_order()
         print(f"Current DV matrix: {self.current_DVM}")
         print(f"Last DV matrix: {self.old_DVM}")
-        update_string = "Updated" if self.updated else "Not Updated"
+        update_string = "Updated" if self.updated else "Not Updated" #all routers are initially set to 'updated'
         print(f"Updated from last DV matrix or the same? {update_string}")
         self.old_DVM = self.current_DVM
 
@@ -70,6 +70,13 @@ class Router:
             DVM[neighbor][self.id] = weight
 
         self.current_DVM = DVM
+
+    def changes_detected(self, dvm1: list, dvm2: list):
+        for i in range(len(dvm1)):
+            for j in range(len(dvm1)):
+                if dvm1[i][j] != dvm2[i][j]:
+                    return True
+        return False
 
     #creates permanent socket connections to other connected routers    
     def populate_clients(self, neighbors):
@@ -121,6 +128,16 @@ class Router:
 
                     if cmd == 'update':
                         print(f"Router {self.id} received {dv} from {sender_id}") #TODO: now update dvm using dv
+                        #TODO: now we need to implement the DV algorithm here
+                        old_dvm = self.current_DVM
+
+                        #~rest of algorithm goes here~
+
+                        new_dvm = self.current_DVM
+                        print(f"CHANGES DETECTED: {self.changes_detected(old_dvm, new_dvm)}")
+                        if self.changes_detected(old_dvm, new_dvm):
+                            self.updated = True
+
                         # print(f"Router #{self.id} received {data.decode()}")
                         s.send(b"Received!")
                     elif cmd == 'end':

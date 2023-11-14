@@ -2,6 +2,8 @@ from router import Router
 from network_topology import network_init
 import socket
 
+wait_time = 2 #the amount of time we wait between checks to see if the game is over
+
 #reading nodes
 print(f"reading data...")
 threads = network_init('network.txt')
@@ -18,7 +20,7 @@ time.sleep(2)
 converged = False
 while not converged:
     print("checking for updates...")
-    time.sleep(2)
+    time.sleep(wait_time)
     responses = []
     for router_n in range(len(threads)):
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

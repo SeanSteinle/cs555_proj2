@@ -25,7 +25,7 @@ for thread in threads:
 main_clients = [start_main_socket(router_id) for router_id in range(len(threads))]
 
 #main iteration loop
-n_iterations = 1
+n_iterations = 50
 for iter_n in range(n_iterations):
     curr_router_id = iter_n % len(threads)
     print(f"iteration #{iter_n}. signaling router #{curr_router_id}")
@@ -34,7 +34,11 @@ for iter_n in range(n_iterations):
 
 print(f"closing main clients...")
 for main_client in main_clients:
-    main_client.close()
+    signal_router(main_client, "close")
+    main_client.close() #not sure this line matters
+
+#print("starting new batch of clients...")
+#main_clients = [start_main_socket(router_id) for router_id in range(len(threads))]
 
 #TESTING UPDATE TABLE -- NOT FINISHED!:
 #print(f"testing update...")

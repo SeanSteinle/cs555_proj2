@@ -17,20 +17,19 @@ class Router:
 
     def receive(self):
         #now listen for commands from main or other routers
+        #set up socket that router will use for duration of experiment
+        host, port = '', self.id
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) #allows for address/port reuse
+        s.bind((host,port))
+        s.listen(1)
+        conn, addr = s.accept()
         while True:
             try:
-                #set up socket that router will use for duration of experiment
-                host, port = '', self.id
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) #allows for address/port reuse
-                s.bind((host,port))
-                s.listen(1)
-                conn, addr = s.accept()
-
                 msg = conn.recv(1024)
                 msg = str(msg).strip()[2:-1]
                 msg = msg.split(": ")
-                if not msg:
+                if msg[0] == "close":
                     break
                 elif msg[0] == "share_table":
                     self.share(conn)
@@ -40,7 +39,7 @@ class Router:
                     msg = "(router #"+ str(self.id)+") could not interpret your message of: " + msg
                     conn.sendall(bytes(msg, "utf-8"))
             except:
-                break
+                pass
 
     def update(self, conn: socket.socket, payload: str):
         #TODO: the DV algorithm should be implemented here! 

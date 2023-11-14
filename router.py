@@ -127,15 +127,17 @@ class Router:
                     dv = [int(elem) for elem in dv.split(' ')]
 
                     if cmd == 'update':
-                        print(f"Router {self.id} received {dv} from {sender_id}") #TODO: now update dvm using dv
+                        #print(f"Router {self.id} received {dv} from {sender_id}") #TODO: now update dvm using dv
                         #TODO: now we need to implement the DV algorithm here
                         old_dvm = self.current_DVM
 
                         #~rest of algorithm goes here~
+                        print(f"updating in router #{self.id} DVM: {self.current_DVM}\nupdating from neighbor #{sender_id}\nwith dv: {dv}\n")
 
                         new_dvm = self.current_DVM
                         if self.changes_detected(old_dvm, new_dvm):
                             self.updated = True
+
 
                         # print(f"Router #{self.id} received {data.decode()}")
                         s.send(b"Received!")

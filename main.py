@@ -36,10 +36,11 @@ while not converged:
     for response in responses:
         if 'True' in response:
             anyTrue = True
-    if anyTrue: converged = False
-    else: converged = True
-
-time.sleep(2)
+    if anyTrue: 
+        converged = False
+        time.sleep(2)
+    else: 
+        converged = True
 
 #can now end server sockets by issuing "end" commands!
 print(f"closing server sockets...")

@@ -1,11 +1,15 @@
 from router import Router
-from network_topology import read_nodes
+from network_topology import network_init
 
 #reading nodes
 print(f"reading data...")
-nodes = read_nodes('network.txt')
+threads = network_init('network.txt')
 print(f"done!")
 
-print(f"starting routers...")
-Router.start_routers(nodes)
-print(f"done!")
+#starting threads
+for thread in threads:
+    thread.start()
+
+#end threads -- will likely need to issue close condition
+for thread in threads:
+    thread.join()

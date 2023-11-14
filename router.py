@@ -17,23 +17,9 @@ class Router:
     #     t = threading.Thread(target=Router, args=[id])
     #     t.start()
 
-    def start_routers(neighbors_dict: dict):
-        Router.num_routers = len(neighbors_dict.keys())
-
-        Router.next_scheduler = [threading.Event() for i in range(Router.num_routers)]
-        Router.next_scheduler[0].set() # Router with id 0 should take action first
-
-        for id in range(Router.num_routers):
-            threading.Thread(target=Router, args=[id, neighbors_dict[id]]).start()  #start a Router at init
-
     def __init__(self, id: int, neighbors: list):
         self.id = id
         self.create_DVM(neighbors)
-
-        #example of how to use the two functions to enforce order between threads
-        self.enforce_order()
-        print(f"Router {self.id} created! DVM: {self.current_DVM}")
-        self.relax_order()
 
         threading.Thread(target=Router.host_server, args=[self]).start()
 

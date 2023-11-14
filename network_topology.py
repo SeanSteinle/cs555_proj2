@@ -3,7 +3,7 @@ from router import Router
 
 def network_init(filename: str):
     neighbors_dict = read_nodes(filename)
-    threads = spinup_threads(neighbors_dict)
+    threads = start_routers(neighbors_dict)
     return threads
 
 def read_nodes(filename: str):
@@ -28,12 +28,13 @@ def read_nodes(filename: str):
 
     return neighbor_dict
 
-def spinup_threads(neighbors_dict: dict): #network_map is NxN array
-    #using this to learn about threads: https://realpython.com/intro-to-python-threading/
-    Router.start_routers(neighbors_dict.keys, )
+def start_routers(neighbors_dict: dict):
+    Router.num_routers = len(neighbors_dict.keys())
 
-    for router_id in neighbors_dict.keys():
-        thread = threading.Thread(target=Router, args=(len(neighbors_dict.keys()), router_id, neighbors_dict[router_id]))
-        threads.append(thread)
+    Router.next_scheduler = [threading.Event() for i in range(Router.num_routers)]
+    Router.next_scheduler[0].set() # Router with id 0 should take action first
 
+    threads = []
+    for id in range(Router.num_routers):
+        threads.append(threading.Thread(target=Router, args=[id, neighbors_dict[id]]))
     return threads

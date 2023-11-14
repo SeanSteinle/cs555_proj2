@@ -16,6 +16,8 @@ class Router:
     converged = False
     convergence_streak = 0
 
+    round_n = 1 #note -- should be incremented and tracked as a global!!
+
     def __init__(self, id: int, neighbors: list):
         self.id = id
         self.create_DVM(neighbors)
@@ -30,9 +32,10 @@ class Router:
             self.enforce_order()
             self.old_DVM = self.current_DVM
 
-            round_n = 1 #note -- should be incremented and tracked as a global!!
-            print(f"Round {round_n}: {self.id}")
             if self.updated:
+                print(f"Round {Router.round_n}: {self.id}")
+                Router.round_n += 1
+                
                 Router.convergence_streak = 0
                 self.updated = False
                 for client_id in self.clients.keys():
@@ -46,7 +49,7 @@ class Router:
                 Router.convergence_streak += 1
                 if Router.convergence_streak >= Router.num_routers:
                     Router.converged = True
-                    
+
             self.relax_order()
 
     #anything put between these two functions will ensure that they happen in a round-robin fashion according to self.id
@@ -141,7 +144,6 @@ class Router:
                         print(f"New DV matrix at node {self.id}: {self.current_DVM[self.id]}\n")
 
                         #check whether DVM changed, update 'updated' flag
-                        new_dvm = self.current_DVM
                         if self.changes_detected(self.old_DVM, self.current_DVM): #TODO: think this is broke!
                             self.updated = True
 

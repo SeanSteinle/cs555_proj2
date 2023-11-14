@@ -41,6 +41,7 @@ while not converged:
     if anyTrue: 
         converged = False
         break
+        time.sleep(10)
     else: 
         converged = True
 

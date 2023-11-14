@@ -152,6 +152,7 @@ class Router:
                     elif cmd == 'has_updates?':
                         s.sendall(bytes(str(self.updated), encoding='utf-8'))
                     elif cmd == 'end':
+                        print(f"Node #{self.id} DV = {self.current_DVM[self.id]}")
                         return
                     else:
                         s.close()

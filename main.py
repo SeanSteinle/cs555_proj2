@@ -3,6 +3,7 @@ from network_topology import network_init
 import socket
 
 wait_time = 2 #the amount of time we wait between checks to see if the game is over
+n_rounds = 0 #TODO: actually increment this. should be global and incremented by threads
 
 #reading nodes
 print(f"reading data...")
@@ -28,7 +29,7 @@ while not converged:
         client.sendall(b'has_updates?,0,0')
         response = client.recvfrom(1024)
         responses.append(str(response))
-        print(f"router #{router_n} has more updates? {response}")
+        #print(f"router #{router_n} has more updates? {response}")
         client.close()
 
     #if any of the threads have not converged, we must continue!
@@ -43,14 +44,16 @@ while not converged:
         converged = True
 
 #can now end server sockets by issuing "end" commands!
-print(f"closing server sockets...")
+print("Final output: ")
 for router_n in range(len(threads)):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect((socket.gethostname(), 50000+router_n))
     client.sendall(b'end,0,0')
     client.close()
 
+time.sleep(1)
+print(f"Number of rounds till convergence {n_rounds}")
+
 #end threads -- will likely need to issue close condition
-print(f"ending threads...")
 for thread in threads:
     thread.join()

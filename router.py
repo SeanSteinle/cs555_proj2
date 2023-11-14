@@ -28,15 +28,18 @@ class Router:
 
         # while True: #TODO: print better and end when converged
         self.enforce_order()
-        print(f"Current DV matrix: {self.current_DVM}")
-        print(f"Last DV matrix: {self.old_DVM}")
+        #print(f"Current DV matrix: {self.current_DVM}")
+        #print(f"Last DV matrix: {self.old_DVM}")
         update_string = "Updated" if self.updated else "Not Updated" #all routers are initially set to 'updated'
-        print(f"Updated from last DV matrix or the same? {update_string}")
+        #print(f"Updated from last DV matrix or the same? {update_string}")
         self.old_DVM = self.current_DVM
 
+        round_n = 1 #note -- should be incremented and tracked as a global!!
+        print(f"Round {round_n}: {self.id}")
         if self.updated:
             for client_id in self.clients.keys():
                 client = self.clients[client_id]
+                print(f"Sending DV to node {client_id}")
                 msg = bytes("update," + str(self.id) + "," + " ".join(list(map(str, self.current_DVM[self.id]))), encoding='utf-8') #convert id and each elem of dvm into str, cast to bytes with utf-8!
                 client.sendall(msg)
                 # client.sendall(f"Hello #{client_id} from router {self.id}!!!".encode())
@@ -134,13 +137,15 @@ class Router:
 
                         #~rest of algorithm goes here~
                         my_dv = self.current_DVM[self.id]
-                        print(f"updating in router #{self.id} DVM: {self.current_DVM}\nupdating from neighbor #{neighbor_id} with dv: {neighbor_dv}")
+                        #print(f"updating in router #{self.id} DVM: {self.current_DVM}\nupdating from neighbor #{neighbor_id} with dv: {neighbor_dv}")
+                        print(f"Node {self.id} received DV from {neighbor_id}")
+                        print(f"Updating DV matrix at node {self.id}")
                         for router_id in range(len(my_dv)):
                             if router_id == self.id: continue
                             #my_dv is current router's dv. dv is neighbor's
                             my_dv[router_id] = min(my_dv[router_id], my_dv[neighbor_id] + neighbor_dv[router_id])
                         self.current_DVM[self.id] = my_dv
-                        print(f"new DV: {self.current_DVM[self.id]}\n")
+                        print(f"New DV matrix at node {self.id}: {self.current_DVM[self.id]}\n")
 
                         #check whether DVM changed, update 'updated' flag
                         new_dvm = self.current_DVM

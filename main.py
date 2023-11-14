@@ -23,7 +23,6 @@ time.sleep(2)
 converged = False
 while not converged:
     print("checking for updates...")
-    time.sleep(wait_time)
     responses = []
     for router_n in range(len(threads)):
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -31,7 +30,7 @@ while not converged:
         client.sendall(b'has_updates?,0,0')
         response = client.recvfrom(1024)
         responses.append(str(response))
-        #print(f"router #{router_n} has more updates? {response}")
+        print(f"router #{router_n} has more updates? {response}")
         client.close()
 
     #if any of the threads have not converged, we must continue!
@@ -41,7 +40,7 @@ while not converged:
             anyTrue = True
     if anyTrue: 
         converged = False
-        time.sleep(2)
+        break
     else: 
         converged = True
 

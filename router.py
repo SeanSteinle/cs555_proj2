@@ -1,7 +1,7 @@
 import threading
 import select
 import socket
-import pickle
+from copy import deepcopy
 
 class Router:
 
@@ -117,7 +117,7 @@ class Router:
 
                     if cmd == 'update':
                         #DV algorithm!
-                        old_dvm = self.current_DVM
+                        old_dvm = deepcopy(self.current_DVM)
 
                         my_dv = self.current_DVM[self.id]
                         print(f"Node {self.id} received DV from {neighbor_id}")
@@ -125,13 +125,16 @@ class Router:
                         for router_id in range(len(my_dv)):
                             if router_id == self.id: continue
                             my_dv[router_id] = min(my_dv[router_id], my_dv[neighbor_id] + neighbor_dv[router_id])
-                        self.current_DVM[self.id] = my_dv
+                        self.current_DVM[self.id] = my_dv #this assignment is broke
                         print(f"New DV matrix at node {self.id}: {self.current_DVM[self.id]}\n")
 
                         #check whether DVM changed, update 'updated' flag
                         new_dvm = self.current_DVM
+                        print(f"hello from bug.\nold_dvm: {old_dvm}\nnew_dvm: {new_dvm}")
+                        print(f"current_DVM: {self.current_DVM}\nmy_dv: {my_dv}\n")
                         if self.changes_detected(old_dvm, new_dvm): #TODO: think this is broke!
-                            self.updated = True
+                            print(f"ID BEING MARKED UPDATED: {self}")
+                            self.updated = True #why is router #4 not indicating updates?
 
                         s.send(b"Received!") #don't delete
                     #TODO: write section cmd == 'share' where client shares DV. should use code currently in __init__

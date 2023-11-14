@@ -6,7 +6,7 @@ class Router:
 
         #initialize the distance-vector matrix for this router. add immediate neighbors
         DVM = [[999]*N for i in range(N)]
-        
+
         for i in range(N):
             DVM[i][i] = 0
 
@@ -64,7 +64,7 @@ class Router:
                     
                 self.DVM[router_id][i] = min
         
-        print(f"updated table {self.DVM}")
+        print(f"updated table {self.id} {self.DVM}")
 
         #TODO: the DV algorithm should be implemented here! 
         msg = "(router #"+ str(self.id)+") updated successfully. payload: " + payload

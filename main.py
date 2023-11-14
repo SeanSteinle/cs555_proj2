@@ -21,29 +21,30 @@ time.sleep(2)
 
 #can now check for end of propogation via "has_updates?" command!
 converged = False
-while not converged:
-    print("checking for updates...")
-    responses = []
-    for router_n in range(len(threads)):
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect((socket.gethostname(), 50000+router_n))
-        client.sendall(b'has_updates?,0,0')
-        response = client.recvfrom(1024)
-        responses.append(str(response))
-        print(f"router #{router_n} has more updates? {response}")
-        client.close()
+while not Router.converged:
+    pass
+    # print("checking for updates...")
+    # responses = []
+    # for router_n in range(len(threads)):
+    #     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #     client.connect((socket.gethostname(), 50000+router_n))
+    #     client.sendall(b'has_updates?,0,0')
+    #     response = client.recvfrom(1024)
+    #     responses.append(str(response))
+    #     print(f"router #{router_n} has more updates? {response}")
+    #     client.close()
 
-    #if any of the threads have not converged, we must continue!
-    anyTrue = False
-    for response in responses:
-        if 'True' in response:
-            anyTrue = True
-    if anyTrue: 
-        converged = False
-        break
-        time.sleep(10)
-    else: 
-        converged = True
+    # #if any of the threads have not converged, we must continue!
+    # anyTrue = False
+    # for response in responses:
+    #     if 'True' in response:
+    #         anyTrue = True
+    # if anyTrue: 
+    #     converged = False
+    #     break
+    #     time.sleep(10)
+    # else: 
+    #     converged = True
 
 #can now end server sockets by issuing "end" commands!
 print("Final output: ")

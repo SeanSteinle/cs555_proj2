@@ -13,6 +13,9 @@ class Router:
 
     next_scheduler: [threading.Event] = [] #when the number of routers are known, will store n events to wake up the next router
 
+    converged = False
+    convergence_streak = 0
+
     def __init__(self, id: int, neighbors: list):
         self.id = id
         self.create_DVM(neighbors)
@@ -22,21 +25,29 @@ class Router:
         Router.all_listening.wait()
         self.populate_clients(neighbors)
 
-        self.enforce_order()
-        self.old_DVM = self.current_DVM
 
-        round_n = 1 #note -- should be incremented and tracked as a global!!
-        print(f"Round {round_n}: {self.id}")
-        if self.updated:
-            for client_id in self.clients.keys():
-                client = self.clients[client_id]
-                print(f"Sending DV to node {client_id}")
-                msg = bytes("update," + str(self.id) + "," + " ".join(list(map(str, self.current_DVM[self.id]))), encoding='utf-8') #convert id and each elem of dvm into str, cast to bytes with utf-8!
-                client.sendall(msg)
-                data = client.recv(1024)
+        while not Router.converged:
+            self.enforce_order()
+            self.old_DVM = self.current_DVM
 
-        self.updated = False
-        self.relax_order()
+            round_n = 1 #note -- should be incremented and tracked as a global!!
+            print(f"Round {round_n}: {self.id}")
+            if self.updated:
+                Router.convergence_streak = 0
+                self.updated = False
+                for client_id in self.clients.keys():
+                    client = self.clients[client_id]
+                    print(f"Sending DV to node {client_id}")
+                    msg = bytes("update," + str(self.id) + "," + " ".join(list(map(str, self.current_DVM[self.id]))), encoding='utf-8') #convert id and each elem of dvm into str, cast to bytes with utf-8!
+                    client.sendall(msg)
+                    data = client.recv(1024)
+
+            else:
+                Router.convergence_streak += 1
+                if Router.convergence_streak >= Router.num_routers:
+                    Router.converged = True
+                    
+            self.relax_order()
 
     #anything put between these two functions will ensure that they happen in a round-robin fashion according to self.id
     def enforce_order(self):

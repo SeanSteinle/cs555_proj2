@@ -124,7 +124,7 @@ class Router:
                         # print(f"Router #{self.id} received {data.decode()}")
                         s.send(b"Received!")
                     elif cmd == 'end':
-                        break
+                        return
                     else:
                         s.close()
                         read_list.remove(s)

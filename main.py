@@ -11,14 +11,15 @@ print(f"done!")
 for thread in threads:
     thread.start()
 
-#import time
-#time.sleep(5)
+import time
+time.sleep(5)
 
-#for router_n in range(len(threads)):
-#    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#    client.connect((socket.gethostname(), 50000+router_n))
-#    client.sendall(b'end')
-#    client.close()
+#can now end server sockets by issuing "end" commands!
+for router_n in range(len(threads)):
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect((socket.gethostname(), 50000+router_n))
+    client.sendall(b'end,0,0')
+    client.close()
 
 #end threads -- will likely need to issue close condition
 for thread in threads:

@@ -51,6 +51,7 @@ class Router:
         #TODO: the router should send its DV to relevant neighbor(s) here, if it has updates to share.
         self.DVM_updated = True #NOTE: this should be set during self.update() above
         if self.DVM_updated:
+            neighbor_ids = []
             for neighbor_router in range(len(self.DVM)):
                 neighbor_id = 50000+neighbor_router
                 if neighbor_id == self.id: continue #don't need to send ourselves updates
@@ -61,10 +62,10 @@ class Router:
                 #response = signal_router(s, "update_table: HELLO SEAN, YOUR EVIL PLAN WORKED!")
                 #s.close()
                 #send DV_to_share through socket
+                neighbor_ids.append(str(neighbor_id))
             
-            
-                msg = "(router #"+ str(self.id)+") shared with neighbor (router #" + str(neighbor_id) + ") successfully."
-                conn.sendall(bytes(msg, "utf-8"))
+            msg = "(router #"+ str(self.id)+") shared with neighbors (routers #" + ', #'.join(neighbor_ids) + ") successfully."
+            conn.sendall(bytes(msg, "utf-8"))
         else:
             msg = "(router #"+ str(self.id)+") didn't have updates."
             conn.sendall(bytes(msg, "utf-8"))

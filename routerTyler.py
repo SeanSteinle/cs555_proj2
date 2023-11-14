@@ -1,6 +1,7 @@
 import threading
 import select
 import socket
+import pickle
 
 class Router:
 
@@ -39,7 +40,7 @@ class Router:
         Router.all_listening.wait()
         self.populate_clients(neighbors)
 
-        # while True:
+        # while True: #TODO: print better and end when converged
         self.enforce_order()
         print(f"Current DV matrix: {self.current_DVM}")
         print(f"Last DV matrix: {self.old_DVM}")
@@ -47,11 +48,15 @@ class Router:
         print(f"Updated from last DV matrix or the same? {update_string}")
         self.old_DVM = self.current_DVM
 
-        for client_id in self.clients.keys():
-            client = self.clients[client_id]
-            client.sendall(f"Hello #{client_id} from router {self.id}!!!".encode())
-            data = client.recv(1024)
+        if self.updated:
+            for client_id in self.clients.keys():
+                client = self.clients[client_id]
+                client.sendall(pickle.dumps((self.id, self.current_DVM[self.id])))
+                # client.sendall(f"Hello #{client_id} from router {self.id}!!!".encode())
+                data = client.recv(1024)
             # print(f"Received from server: {data.decode()}")
+
+        self.updated = False
         self.relax_order()
 
 
@@ -116,7 +121,9 @@ class Router:
                 else:
                     data = s.recv(1024)
                     if data:
-                        print(f"Router #{self.id} received {data.decode()}")
+                        sender_id, dv = pickle.loads(data)
+                        print(f"Router {self.id} received {dv} from {sender_id}") #TODO: now update dvm using dv
+                        # print(f"Router #{self.id} received {data.decode()}")
                         s.send(b"Received!")
                     else:
                         s.close()

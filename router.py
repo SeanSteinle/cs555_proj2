@@ -38,8 +38,9 @@ class Router:
                 else:
                     msg = "(router #"+ str(self.id)+") could not interpret your message of: " + msg
                     conn.sendall(bytes(msg, "utf-8"))
-            except:
-                pass
+            except Exception as e:
+                msg = "(router #"+ str(self.id)+") had exception: " + e
+                conn.sendall(bytes(msg, "utf-8"))
 
     def update(self, conn: socket.socket, payload: str):
         #TODO: the DV algorithm should be implemented here! 

@@ -37,14 +37,6 @@ for main_client in main_clients:
     signal_router(main_client, "close")
     main_client.close() #not sure this line matters
 
-#print("starting new batch of clients...")
-#main_clients = [start_main_socket(router_id) for router_id in range(len(threads))]
-
-#TESTING UPDATE TABLE -- NOT FINISHED!:
-#print(f"testing update...")
-#response = signal_router(main_clients[0], "update_table: DATA HERE")
-#print(f"(main) got response {response}")
-
 print(f"closing threads...")
 for thread in threads:
     thread.join()

@@ -4,13 +4,12 @@ import socket
 
 class Router:
 
-    num_routers = 0
-    all_listening = threading.Event()
+    num_routers = 0                     #keeps track of the number of routers there should be
+    all_listening = threading.Event()   #will wake up all threads when all listening sockets are up
+    routers_listening = set()           #keeps track of the number of listening sockets are up
+    listening_lock = threading.Lock()   #ensures that routers_listening does not encounter race conditions
 
-    routers_listening = set()
-    listening_lock = threading.Lock()
-
-    next_scheduler: [threading.Event] = []
+    next_scheduler: [threading.Event] = [] #when the number of routers are known, will store n events to wake up the next router
 
     # def start_router(id: int, ):
     #     Router.num_routers += 1
@@ -21,19 +20,19 @@ class Router:
         Router.num_routers = len(neighbors_dict.keys())
 
         Router.next_scheduler = [threading.Event() for i in range(Router.num_routers)]
-        Router.next_scheduler[0].set()
+        Router.next_scheduler[0].set() # Router with id 0 should take action first
 
         for id in range(Router.num_routers):
-            threading.Thread(target=Router, args=[id, neighbors_dict[id]]).start()
+            threading.Thread(target=Router, args=[id, neighbors_dict[id]]).start()  #start a Router at init
 
     def __init__(self, id: int, neighbors: list):
         self.id = id
-        self.updated = True
         self.create_DVM(neighbors)
 
-        self.start_order_check()
+        #example of how to use the two functions to enforce order between threads
+        self.enforce_order()
         print(f"Router {self.id} created! DVM: {self.DVM}")
-        self.end_order_check()
+        self.relax_order()
 
         threading.Thread(target=Router.host_server, args=[self]).start()
 
@@ -41,19 +40,20 @@ class Router:
         self.populate_clients(neighbors)
 
         while True:
-            self.start_order_check()
+            self.enforce_order()
             for client_id in self.clients.keys():
                 client = self.clients[client_id]
                 client.sendall(f"Hello #{client_id} from router {self.id}!!!".encode())
                 data = client.recv(1024)
                 # print(f"Received from server: {data.decode()}")
-            self.end_order_check()
+            self.relax_order()
 
 
-    def start_order_check(self):
+    #anything put between these two functions will ensure that they happen in a round-robin fashion according to self.id
+    def enforce_order(self):
         Router.next_scheduler[self.id].wait()
 
-    def end_order_check(self):
+    def relax_order(self):
         Router.next_scheduler[self.id].clear()
         Router.next_scheduler[(self.id + 1) % Router.num_routers].set()
         
@@ -65,11 +65,13 @@ class Router:
             DVM[i][i] = 0
 
         for neighbor,weight in neighbors:
+            self.updated = True #novel information found, should be shared next iteration
             DVM[self.id][neighbor] = weight
             DVM[neighbor][self.id] = weight
 
         self.DVM = DVM
-        
+
+    #creates permanent socket connections to other connected routers    
     def populate_clients(self, neighbors):
         self.clients = {}
         for router_id, weight in neighbors:
@@ -77,8 +79,8 @@ class Router:
             client.connect(('', 50000+router_id))
             self.clients[router_id] = client
 
-
     #maybe maintain 2 versions of DVs, one to be update when new info comes in and another to provide the illusion of synchronized iteration
+    #non-blocking listening socket that allows for code to execute at least every quarter second
     def host_server(self):
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -88,11 +90,13 @@ class Router:
         read_list = [server]
         while True:
             readable, writable, errored = select.select(read_list, [], [], 0.25)
+
+            #Add new listening router until all are listening
             Router.listening_lock.acquire()
             if self.id not in Router.routers_listening:
                 Router.routers_listening.add(self.id)
                 print(f"Routers listening: {Router.routers_listening}")
-                if len(Router.routers_listening) == Router.num_routers:
+                if len(Router.routers_listening) == Router.num_routers: #if all are listening then clients can start connecting to servers
                     Router.all_listening.set()
             Router.listening_lock.release()
             
@@ -109,5 +113,3 @@ class Router:
                     else:
                         s.close()
                         read_list.remove(s)
-
-

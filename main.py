@@ -25,7 +25,7 @@ for thread in threads:
 main_clients = [start_main_socket(router_id) for router_id in range(len(threads))]
 
 #main iteration loop
-n_iterations = 5
+n_iterations = 1
 for iter_n in range(n_iterations):
     curr_router_id = iter_n % len(threads)
     print(f"iteration #{iter_n}. signaling router #{curr_router_id}")

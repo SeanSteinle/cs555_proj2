@@ -9,7 +9,6 @@ class Router:
         for neighbor,weight in neighbors:
             DVM[router_id][neighbor] = weight
         self.DVM = DVM #this router's distance-vector matrix
-        print(f"DVM created! {self.DVM}")
 
         #go into message mode--wait to receive messages from either Main or other routers.
         self.receive()
@@ -56,8 +55,8 @@ class Router:
                 #prepare DV_to_share as string
                 #create socket to neighbor (can I reuse my functions from socket_utils?)
                 #send DV_to_share through socket
-            msg = "(router #"+ str(self.id)+") shared with neighbors successfully."
-            conn.sendall(bytes(msg, "utf-8"))
+                msg = "(router #"+ str(self.id)+") shared with neigbor (router #" + str(50000+neighbor_router) + ") successfully."
+                conn.sendall(bytes(msg, "utf-8"))
         else:
             msg = "(router #"+ str(self.id)+") didn't have updates."
             conn.sendall(bytes(msg, "utf-8"))

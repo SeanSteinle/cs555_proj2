@@ -40,6 +40,15 @@ class Router:
         Router.all_listening.wait()
         self.populate_clients(neighbors)
 
+        while True:
+            self.start_order_check()
+            for client_id in self.clients.keys():
+                client = self.clients[client_id]
+                client.sendall(f"Hello #{client_id} from router {self.id}!!!".encode())
+                data = client.recv(1024)
+                # print(f"Received from server: {data.decode()}")
+            self.end_order_check()
+
 
     def start_order_check(self):
         Router.next_scheduler[self.id].wait()
@@ -68,9 +77,6 @@ class Router:
             client.connect(('', 50000+router_id))
             self.clients[router_id] = client
 
-            client.sendall(f"Hello #{router_id} from router {self.id}!!!".encode())
-            data = client.recv(1024)
-            # print(f"Received from server: {data.decode()}")
 
     #maybe maintain 2 versions of DVs, one to be update when new info comes in and another to provide the illusion of synchronized iteration
     def host_server(self):

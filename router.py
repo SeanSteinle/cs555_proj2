@@ -134,12 +134,13 @@ class Router:
                         #~rest of algorithm goes here~
 
                         new_dvm = self.current_DVM
-                        print(f"CHANGES DETECTED: {self.changes_detected(old_dvm, new_dvm)}")
                         if self.changes_detected(old_dvm, new_dvm):
                             self.updated = True
 
                         # print(f"Router #{self.id} received {data.decode()}")
                         s.send(b"Received!")
+                    elif cmd == 'has_updates?':
+                        s.sendall(bytes(str(self.updated), encoding='utf-8'))
                     elif cmd == 'end':
                         return
                     else:

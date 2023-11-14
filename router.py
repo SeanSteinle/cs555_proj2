@@ -123,21 +123,29 @@ class Router:
                     
                     #now process data message
                     data = data.decode('utf-8')
-                    cmd, sender_id, dv = data.split(',')
-                    dv = [int(elem) for elem in dv.split(' ')]
+                    cmd, neighbor_id, neighbor_dv = data.split(',')
+                    neighbor_id = int(neighbor_id)
+                    neighbor_dv = [int(elem) for elem in neighbor_dv.split(' ')]
 
                     if cmd == 'update':
-                        #print(f"Router {self.id} received {dv} from {sender_id}") #TODO: now update dvm using dv
+                        #print(f"Router {self.id} received {neighbor_dv} from {neighbor_id}") #TODO: now update neighbor_dvm using neighbor_dv
                         #TODO: now we need to implement the DV algorithm here
                         old_dvm = self.current_DVM
 
                         #~rest of algorithm goes here~
-                        print(f"updating in router #{self.id} DVM: {self.current_DVM}\nupdating from neighbor #{sender_id}\nwith dv: {dv}\n")
+                        my_dv = self.current_DVM[self.id]
+                        print(f"updating in router #{self.id} DVM: {self.current_DVM}\nupdating from neighbor #{neighbor_id} with dv: {neighbor_dv}")
+                        for router_id in range(len(my_dv)):
+                            if router_id == self.id: continue
+                            #my_dv is current router's dv. dv is neighbor's
+                            my_dv[router_id] = min(my_dv[router_id], my_dv[neighbor_id] + neighbor_dv[router_id])
+                        self.current_DVM[self.id] = my_dv
+                        print(f"new DV: {self.current_DVM[self.id]}\n")
 
+                        #check whether DVM changed, update 'updated' flag
                         new_dvm = self.current_DVM
-                        if self.changes_detected(old_dvm, new_dvm):
+                        if self.changes_detected(old_dvm, new_dvm): #TODO: think this is broke!
                             self.updated = True
-
 
                         # print(f"Router #{self.id} received {data.decode()}")
                         s.send(b"Received!")

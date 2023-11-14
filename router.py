@@ -1,6 +1,7 @@
 import threading
 import select
 import socket
+import pickle
 from copy import deepcopy
 
 class Router:
@@ -21,9 +22,8 @@ class Router:
         Router.all_listening.wait()
         self.populate_clients(neighbors)
 
-        #THIS IS WHERE SHARE STARTS
         self.enforce_order()
-        self.old_DVM = None
+        self.old_DVM = self.current_DVM
 
         round_n = 1 #note -- should be incremented and tracked as a global!!
         print(f"Round {round_n}: {self.id}")
@@ -118,7 +118,7 @@ class Router:
 
                     if cmd == 'update':
                         #DV algorithm!
-                        self.old_dvm = deepcopy(self.current_DVM)
+                        self.old_DVM = deepcopy(self.current_DVM)
 
                         my_dv = self.current_DVM[self.id]
                         print(f"Node {self.id} received DV from {neighbor_id}")
@@ -126,19 +126,13 @@ class Router:
                         for router_id in range(len(my_dv)):
                             if router_id == self.id: continue
                             my_dv[router_id] = min(my_dv[router_id], my_dv[neighbor_id] + neighbor_dv[router_id])
-                        self.current_DVM[self.id] = my_dv #this assignment is broke
+                        self.current_DVM[self.id] = my_dv
                         print(f"New DV matrix at node {self.id}: {self.current_DVM[self.id]}\n")
 
                         #check whether DVM changed, update 'updated' flag
-                        print(f"hello from bug.\nold_dvm: {self.old_dvm}")
-                        print(f"current_DVM: {self.current_DVM}\nmy_dv: {my_dv}\n")
-                        if self.changes_detected(self.old_dvm, self.current_DVM): #TODO: think this is broke!
-                            print(f"ID BEING MARKED UPDATED: {self.id}\n") #THIS SHOULD BE SET DURING THE THREAD'S TURN
-                            self.updated = True #why is router #4 not indicating updates?
-                            #router #4 is not being updated, because thread #4 isn't alive yet when it is updated
-                            #before any threads share their DVs, all threads should have initialized their DVM.
-                            #is this correct? what a mystery... 
-                            #this may not end up being a big deal. should go away after the first iteration!
+                        new_dvm = self.current_DVM
+                        if self.changes_detected(self.old_DVM, self.current_DVM): #TODO: think this is broke!
+                            self.updated = True
 
                         s.send(b"Received!") #don't delete
                     #TODO: write section cmd == 'share' where client shares DV. should use code currently in __init__

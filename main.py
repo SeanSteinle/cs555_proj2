@@ -25,17 +25,17 @@ for thread in threads:
 main_clients = [start_main_socket(router_id) for router_id in range(len(threads))]
 
 #main iteration loop
-n_iterations = 5
+n_iterations = 1
 for iter_n in range(n_iterations):
     curr_router_id = iter_n % len(threads)
     print(f"iteration #{iter_n}. signaling router #{curr_router_id}")
     response = signal_router(main_clients[curr_router_id], "share_table")
-    print(f"got response {response}")
+    print(f"(main) got response {response}")
 
 #TESTING UPDATE TABLE -- NOT FINISHED!:
-print(f"testing update...")
-response = signal_router(main_clients[0], "update_table: DATA HERE")
-print(f"got response {response}")
+#print(f"testing update...")
+#response = signal_router(main_clients[0], "update_table: DATA HERE")
+#print(f"(main) got response {response}")
 
 print(f"closing main clients...")
 for main_client in main_clients:
